@@ -1,16 +1,14 @@
 /* import ReCAPTCHA from "react-google-recaptcha" */
-import { useRef, useState, useCallback  } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
-import Reaptcha from 'reaptcha';
+import Reaptcha from "reaptcha";
 
+const Form = () => {
+  let captcha = useRef(null);
 
-const Form = () =>{
+  const zero = 0;
 
-    let captcha = useRef(null);
-
-    const zero = 0;
-
-/*     const handleSubmit = async (e) =>{
+  /*     const handleSubmit = async (e) =>{
         e.preventDefault();
         const inputVal = e.target[0].value;
 
@@ -25,52 +23,50 @@ const Form = () =>{
         })
     } */
 
-    const [captchaToken, setCaptchaToken] = useState(null);
-    const [isLoaded, setIsLoaded] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  const handleToken = () => {
+    captcha.current.getResponse().then((res) => {
+      console.log(res);
+      setCaptchaToken(res);
+    });
 
-    const handleToken =  (token) =>{
-        captcha.current.getResponse().then(res => {
-            console.log(res); 
-            alert(res)
-        })
-    
-        setCaptchaToken(token)
-        
-        console.log();
-    }
+    console.log();
+  };
 
-    const handleLoad = ()=>{
-        setIsLoaded(true);
-    }
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const inputVal = await e.target[0].value;
+    console.log(inputVal);
 
-    const handleSubmit = (e) =>{
-        e.preventDefault();
-        const inputVal = e.target[0].value;
-
-        axios.post("http://localhost:2000/post", {inputVal,captchaToken})
-        .then(res =>  console.log(res))
-        .catch((error) => {
+    await axios
+      .post("http://localhost:2000/post", { inputVal, captchaToken })
+      .then((res) => console.log(res))
+      .catch((error) => {
         console.log("Didnt work");
-        })
-    }
+      });
+  };
 
-    return(
-        <>
-            <form action="" onSubmit={handleSubmit} >
-                <label htmlFor="name">Name</label>
-                    <input type="text" id="name" className="input"/>
-                    < Reaptcha
-                    ref={captcha}
-                    sitekey={process.env.REACT_APP_SITE_KEY} 
-                    onVerify={handleToken}
-                    onLoad={() => handleLoad}
-                    />
-                <button>Submit</button>
-            </form>
-        </>
-    )
-}
+  return (
+    <>
+      <form action="" onSubmit={handleSubmit}>
+        <label htmlFor="name">Name</label>
+        <input type="text" id="name" className="input" />
+        <Reaptcha
+          ref={captcha}
+          sitekey={process.env.REACT_APP_SITE_KEY}
+          onVerify={handleToken}
+          onLoad={() => handleLoad}
+        />
+        <button>Submit</button>
+      </form>
+    </>
+  );
+};
 
-export default Form
+export default Form;

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const app = express();
-const cors = require('cors');
-const axios = require('axios');
-const dotenv = require('dotenv').config();
+const cors = require("cors");
+const axios = require("axios");
+require("dotenv").config();
 const port = process.env.PORT || 2000;
 
 //enabling cors
@@ -11,34 +11,36 @@ app.use(cors());
 
 //Parse data
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 //add router in express app
 app.use("/", router);
 
-
 //POST route
 router.post("/post", async (req, res) => {
-    const {token, inputVal} = req.body;
+  const { captchaToken, inputVal } = req.body;
 
-    console.log(inputVal);
-    console.log(token);
-    console.log(
-      req.body
+  try {
+    // Sends secret key and response token to Google
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${captchaToken}`
     );
 
+    console.log(response.data);
 
-    await axios.post(
-        `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${token}`
-      );
-
-      if (res.status(200)) {
-        res.send("Human 👨 👩");
-    }else{
+    // Check response status and send back to the client-side
+    if (response.data.success) {
+      res.send("Human 👨 👩");
+    } else {
       res.send("Robot 🤖");
     }
+  } catch (error) {
+    // Handle any errors that occur during the reCAPTCHA verification process
+    console.error(error);
+    res.status(500).send("Error verifying reCAPTCHA");
+  }
 });
 
-app.listen(port, () =>{
-    console.log(`server is running on ${port}`);
+app.listen(port, () => {
+  console.log(`server is running on ${port}`);
 });
